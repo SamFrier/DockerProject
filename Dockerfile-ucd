@@ -1,0 +1,42 @@
+FROM ubuntu
+MAINTAINER SamFrier
+
+RUN apt-get update
+
+# Install MySQL
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get install -y mysql-server libmysql-java # no root password!!
+RUN apt-get update
+RUN apt-get install -y libmysqld-dev
+
+# Set up database
+COPY extra-files/setup_ucd_db.sql /setup_ucd_db.sql
+RUN service mysql start && mysql -u root < setup_ucd_db.sql
+
+# Install Java
+RUN apt-get install -y openjdk-8-jre openjdk-8-jdk
+ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
+
+# Get UCD files
+COPY extra-files/URBANCODE_DEPLOY_6.2.2_EN_EVAL.zip /URBANCODE_DEPLOY_6.2.2_EN_EVAL.zip
+RUN apt-get install -y p7zip-full
+RUN 7za x URBANCODE_DEPLOY_6.2.2_EN_EVAL.zip
+
+# Configure UCD install
+COPY extra-files/ucd.install.properties /ibm-ucd-install/ucd.install.properties
+WORKDIR ibm-ucd-install
+RUN cat ucd.install.properties >> install.properties && \
+sed -i '/chmod +x "opt\/apache-ant-\${OUR_ANT_VERSION}\/bin\/ant"/ s/$/; sync/' install-server.sh && \
+chmod +x install-server.sh; sync
+RUN cp /usr/share/java/mysql.jar lib/ext/
+
+# Install UCD
+EXPOSE 8443
+EXPOSE 8080
+RUN service mysql start && ./install-server.sh << EOF\
+\n\
+\n\
+EOF
+
+# Run UCD
+ENTRYPOINT service mysql start && /opt/ibm-ucd/server/bin/server run

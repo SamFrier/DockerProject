@@ -1,0 +1,23 @@
+FROM ubuntu
+MAINTAINER SamFrier
+
+RUN apt-get update
+
+# Get Zabbix files
+ADD http://repo.zabbix.com/zabbix/3.2/ubuntu/pool/main/z/zabbix/zabbix_3.2.1.orig.tar.gz /zabbix_3.2.1.orig.tar.gz
+RUN tar zxvf zabbix_3.2.1.orig.tar.gz
+RUN groupadd zabbix
+RUN useradd -g zabbix zabbix
+
+# Install MySQL
+# ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update && apt-get install -y mysql-client libmysqld-dev
+
+# Get other install files
+COPY extra-files/setup_zabbix.sh /setup_zabbix.sh
+COPY extra-files/setup_zabbix_db.sql /setup_zabbix_db.sql
+COPY extra-files/zabbix.conf.php /zabbix.conf.php
+
+EXPOSE 80
+EXPOSE 3306
+ENTRYPOINT ./setup_zabbix.sh && service apache2 start && bash

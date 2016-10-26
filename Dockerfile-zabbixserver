@@ -1,0 +1,67 @@
+FROM ubuntu
+MAINTAINER SamFrier
+
+RUN apt-get update
+
+# Get Zabbix files
+ADD http://repo.zabbix.com/zabbix/3.2/ubuntu/pool/main/z/zabbix/zabbix_3.2.1.orig.tar.gz /zabbix_3.2.1.orig.tar.gz
+RUN tar zxvf zabbix_3.2.1.orig.tar.gz
+RUN groupadd zabbix
+RUN useradd -g zabbix zabbix
+
+# Install MySQL
+#ENV TERM linux
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update
+RUN apt-get install -y mysql-server libmysqld-dev # no root password!!!!
+#RUN export DEBIAN_FRONTEND="interactive"
+
+# Set up database
+COPY extra-files/setup_zabbix_db.sql /setup_zabbix_db.sql
+RUN service mysql start && mysql -u root < setup_zabbix_db.sql # password is 'zabbix'
+WORKDIR /zabbix-3.2.1/database/mysql
+RUN service mysql start \
+&& mysql -u zabbix -pzabbix zabbix < schema.sql \
+&& mysql -u zabbix -pzabbix zabbix < images.sql \
+&& mysql -u zabbix -pzabbix zabbix < data.sql
+
+# Install Zabbix
+#RUN apt-get install -y zabbix-server-mysql zabbix-frontend-php
+WORKDIR /zabbix-3.2.1
+RUN apt-get install -y gcc make
+RUN ./configure --enable-server --with-mysql
+RUN service mysql start && make install
+RUN zabbix_server
+
+# Configure Zabbix
+RUN sed -i 's/# ListenPort=10051/# ListenPort=10051\n\nListenPort=10051/g' \
+/usr/local/etc/zabbix_server.conf
+RUN sed -i 's/# DBPassword=/# DBPassword=\n\nDBPassword=zabbix/g' \
+/usr/local/etc/zabbix_server.conf
+RUN sed -i 's/# DBHost=localhost/# DBHost=localhost=\n\nDBHost=localhost/g' \
+/usr/local/etc/zabbix_server.conf
+
+# Set up Apache
+RUN apt-get install -y apache2 apache2-doc apache2-utils
+RUN sed -i 's/keepAlive On/KeepAlive Off/g' /etc/apache2/apache2.conf
+
+# Set up PHP
+RUN apt-get install -y libapache2-mod-php php-mcrypt php-mysql php-mbstring php-bcmath php-gd php-xml
+RUN a2dissite 000-default.conf
+RUN service apache2 restart && service apache2 reload
+RUN apt-get install -y php
+RUN mkdir /var/www/html/zabbix
+WORKDIR /zabbix-3.2.1/frontends/php
+RUN cp -a . /var/www/html/zabbix
+WORKDIR /zabbix-3.2.1
+RUN sed -i 's/max_size = 8/max_size = 16/g' /etc/php/7.0/apache2/php.ini
+RUN sed -i 's/on_time = 30/on_time = 300/g' /etc/php/7.0/apache2/php.ini
+RUN sed -i 's/max_input_time = 6/max_input_time = 300/g' /etc/php/7.0/apache2/php.ini
+RUN sed -i 's/;date.timezone =/date.timezone = UTC/g' /etc/php/7.0/apache2/php.ini
+COPY extra-files/zabbix.conf.php /var/www/html/zabbix/conf
+RUN chmod -R 775 /var/www
+RUN service apache2 restart
+
+EXPOSE 80
+EXPOSE 10051
+ENTRYPOINT service mysql start && zabbix_server && service apache2 start && bash

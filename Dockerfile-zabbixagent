@@ -1,0 +1,32 @@
+FROM ubuntu
+MAINTAINER SamFrier
+
+RUN apt-get update
+#RUN apt-get install -y gcc make
+
+# Get Zabbix files
+#ADD http://repo.zabbix.com/zabbix/3.2/ubuntu/pool/main/z/zabbix/zabbix_3.2.1.orig.tar.gz /zabbix_3.2.1.orig.tar.gz
+#RUN tar zxvf zabbix_3.2.1.orig.tar.gz
+#RUN groupadd zabbix
+#RUN useradd -g zabbix zabbix
+
+# Set up Zabbix
+#WORKDIR /zabbix-3.2.1
+#RUN ./configure --enable-agent
+#RUN make install
+
+# Configure Zabbix (this might not work!!!)
+#RUN sed 's/Server=\(.*\)\n/Server=zabbix-server\n/g' /usr/local/etc/zabbix_agentd.conf
+
+RUN apt-get install -y wget
+RUN wget http://repo.zabbix.com/zabbix/3.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.0-1+xenial_all.deb
+RUN dpkg -i zabbix-release_3.0-1+xenial_all.deb
+RUN apt-get update
+RUN apt-get install -y zabbix-agent
+RUN sed -i '95s/.*/Server=zabbix-server/' /etc/zabbix/zabbix_agentd.conf
+RUN sed -i '136s/.*/ServerActive=zabbix-server/' /etc/zabbix/zabbix_agentd.conf
+RUN /etc/init.d/zabbix-agent restart
+
+EXPOSE 10050
+ENTRYPOINT /etc/init.d/zabbix-agent start && bash
+#ENTRYPOINT zabbix_agentd && bash

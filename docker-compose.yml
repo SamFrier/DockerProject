@@ -1,0 +1,72 @@
+version: '2'
+
+services:
+
+#  data-container:
+#    image: mysql
+#    volumes:
+#      - /home/ubuntu/dockerproject/mysql/:/var/lib/mysql
+
+#  mysql:
+#    image: mysql
+#    volumes_from:
+#      - data-container
+#    environment:
+#      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+#    depends_on:
+#      - data-container
+
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile-jenkins
+    ports:
+      - "8080:8080"
+    tty: true
+
+  jira:
+    build:
+      context: .
+      dockerfile: Dockerfile-jira
+    ports:
+      - "8081:8081"
+      - "8006:8006"
+    tty: true
+
+  nexus:
+    build:
+      context: .
+      dockerfile: Dockerfile-nexus
+    ports:
+      - "8082:8081"
+    tty: true
+  
+  zabbix-server:
+    build:
+      context: .
+      dockerfile: Dockerfile-zabbixserver
+    ports:
+      - "80:80"
+      - "10051:10051"
+    tty: true
+
+  zabbix-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile-zabbixagent
+    ports:
+      - "10050:10050"
+    tty: true
+    depends_on:
+      - zabbix-server
+#    links:
+#      - zabbix-server:zabbixserver
+
+  urbancode-deploy:
+    build:
+      context: .
+      dockerfile: Dockerfile-ucd
+    ports:
+      - "8443:8443"
+      - "8083:8080"
+    tty: true
