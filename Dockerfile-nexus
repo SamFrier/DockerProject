@@ -2,11 +2,16 @@ FROM ubuntu
 MAINTAINER SamFrier
 
 RUN apt-get update
-RUN apt-get install -y default-jre default-jdk #openjdk-8-jre openjdk-8-jdk
 
+# Install Java
+RUN apt-get install -y default-jre default-jdk
+
+# Get files
 ADD http://download.sonatype.com/nexus/3/latest-unix.tar.gz latest-unix.tar.gz
 RUN tar zxvf latest-unix.tar.gz
 RUN chmod a+x /nexus-3.0.2-02/bin/nexus
 WORKDIR /nexus-3.0.2-02/bin
 EXPOSE 8081
+
+# Run Nexus
 ENTRYPOINT ./nexus start && bash

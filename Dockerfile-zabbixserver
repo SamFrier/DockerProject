@@ -10,7 +10,6 @@ RUN groupadd zabbix
 RUN useradd -g zabbix zabbix
 
 # Install MySQL
-#ENV TERM linux
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
 RUN apt-get install -y mysql-server libmysqld-dev # no root password!!!!
@@ -26,7 +25,6 @@ RUN service mysql start \
 && mysql -u zabbix -pzabbix zabbix < data.sql
 
 # Install Zabbix
-#RUN apt-get install -y zabbix-server-mysql zabbix-frontend-php
 WORKDIR /zabbix-3.2.1
 RUN apt-get install -y gcc make
 RUN ./configure --enable-server --with-mysql
@@ -62,6 +60,7 @@ COPY extra-files/zabbix.conf.php /var/www/html/zabbix/conf
 RUN chmod -R 775 /var/www
 RUN service apache2 restart
 
+# Run server
 EXPOSE 80
 EXPOSE 10051
 ENTRYPOINT service mysql start && zabbix_server && service apache2 start && bash

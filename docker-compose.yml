@@ -2,20 +2,6 @@ version: '2'
 
 services:
 
-#  data-container:
-#    image: mysql
-#    volumes:
-#      - /home/ubuntu/dockerproject/mysql/:/var/lib/mysql
-
-#  mysql:
-#    image: mysql
-#    volumes_from:
-#      - data-container
-#    environment:
-#      - MYSQL_ALLOW_EMPTY_PASSWORD=true
-#    depends_on:
-#      - data-container
-
   jenkins:
     build:
       context: .

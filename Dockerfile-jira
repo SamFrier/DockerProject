@@ -3,12 +3,16 @@ MAINTAINER SamFrier
 
 RUN apt-get update
 
+# Get files
 COPY extra-files/response.varfile /response.varfile
 ADD https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-7.2.3-x64.bin /atlassian-jira-software-7.2.3-x64.bin
 RUN chmod a+x atlassian-jira-software-7.2.3-x64.bin
 COPY extra-files/response.varfile /response.varfile
 EXPOSE 8081
 EXPOSE 8006
+
+# Install Jira
 RUN ./atlassian-jira-software-7.2.3-x64.bin -q -varfile response.varfile 
-# ENTRYPOINT service jira start && bash
+
+# Start Jira
 ENTRYPOINT /atlassian/jira/bin/start-jira.sh -fg
