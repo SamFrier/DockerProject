@@ -36,7 +36,7 @@ EXPOSE 8080
 RUN service mysql start && ./install-server.sh << EOF\
 \n\
 \n\
-EOF
+EOF # I have no idea what these EOFs do but Henri seems to think they are important
 
 # Run UCD
 ENTRYPOINT service mysql start && /opt/ibm-ucd/server/bin/server run
