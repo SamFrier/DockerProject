@@ -1,3 +1,4 @@
-CREATE DATABASE IF NOT EXISTS uDeploy;
-CREATE USER 'udeploy'@'localhost' IDENTIFIED BY 'urbancode';
-GRANT ALL ON uDeploy.* TO 'udeploy'@'localhost' WITH GRANT OPTION;
+CREATE DATABASE IF NOT EXISTS ibm_ucd character set utf8 collate utf8_bin;
+CREATE USER IF NOT EXISTS 'ibm_ucd'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL ON ibm_ucd.* TO 'ibm_ucd'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;
+FLUSH PRIVILEGES;

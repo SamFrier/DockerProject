@@ -5,7 +5,7 @@ RUN apt-get update
 
 # Install MySQL
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get install -y mysql-server libmysql-java # no root password!!
+RUN apt-get update && apt-get install -y mysql-server libmysql-java # no root password!!
 RUN apt-get update
 RUN apt-get install -y libmysqld-dev
 
@@ -14,13 +14,13 @@ COPY extra-files/setup_ucd_db.sql /setup_ucd_db.sql
 RUN service mysql start && mysql -u root < setup_ucd_db.sql
 
 # Install Java
-RUN apt-get install -y openjdk-8-jre openjdk-8-jdk
-ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
+RUN apt-get install -y default-jdk
+ENV JAVA_HOME /usr/lib/jvm/default-java
 
 # Get UCD files
 COPY extra-files/URBANCODE_DEPLOY_6.2.2_EN_EVAL.zip /URBANCODE_DEPLOY_6.2.2_EN_EVAL.zip
-RUN apt-get install -y p7zip-full
-RUN 7za x URBANCODE_DEPLOY_6.2.2_EN_EVAL.zip
+RUN apt-get install -y unzip
+RUN unzip URBANCODE_DEPLOY_6.2.2_EN_EVAL.zip
 
 # Configure UCD install
 COPY extra-files/ucd.install.properties /ibm-ucd-install/ucd.install.properties
@@ -39,4 +39,4 @@ RUN service mysql start && ./install-server.sh << EOF\
 EOF # I have no idea what these EOFs do but Henri seems to think they are important
 
 # Run UCD
-ENTRYPOINT service mysql start && /opt/ibm-ucd/server/bin/server run
+ENTRYPOINT service mysql start && /opt/ibm-ucd/server/bin/server run && bash
