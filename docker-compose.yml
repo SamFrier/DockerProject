@@ -46,7 +46,7 @@ services:
     depends_on:
       - zabbix-server
 #    links:
-#      - zabbix-server:zabbixserver
+#      - zabbix-server:zabbix-server
 
   urbancode-deploy:
     build:
