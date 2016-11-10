@@ -26,10 +26,10 @@ Before starting the installation, ensure that you have Vagrant and VirtualBox in
 
 5.	Edit the following lines in the *Vagrantfile*:
 
-	    ```ruby
-	    $num_instances = 3
-	    $update_channel = “stable”
-	    ```
+	```ruby
+	$num_instances = 3
+	$update_channel = “stable”
+	```
 
 6.	Run `vagrant up` in the terminal window. Vagrant will automatically download the CoreOS Vagrant box from the internet (which may take some time, so be patient) and then set up a cluster of 3 virtual machines.
 
